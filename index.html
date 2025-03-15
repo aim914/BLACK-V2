@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥀⏤͟͟͞͞ ᵀᵉᵃᵐ俄 X ʙʀᴏᴛʜᴇʀs࿐OWNER𖤍..᭄ 🥀</title>
+    <style>
+        body {
+            background-color: black;
+            color: #00FF00;
+            font-family: monospace;
+            padding: 20px;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+            font-weight: bold;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            color: white;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #00FF00;
+        }
+        th {
+            background-color: #00FF00;
+            color: black;
+        }
+        #allResults {
+            margin-top: 30px;
+            padding: 10px;
+            border: 2px solid #00FF00;
+            background-color: #001100;
+            color: #FFD700;
+            height: 300px;
+            overflow-y: auto;
+        }
+        #countdown-timer {
+            color: #FF4500;
+            font-size: 20px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixRain"></canvas>
+    
+    <h1 style="color: #FF4500;">🥀⏤͟͟͞͞ ᵀᵉᵃᵐ俄 X ʙʀᴏᴛʜᴇʀs࿐OWNER𖤍..᭄ 🥀</h1>
+    <div id="console"></div>
+    <div id="countdown-timer"></div>
+    <div id="history"></div>
+    <div id="allResults"></div>
+
+    <script>
+        const consoleDiv = document.getElementById("console");
+        const countdownDiv = document.getElementById("countdown-timer");
+        const historyDiv = document.getElementById("history");
+        const allResultsDiv = document.getElementById("allResults");
+
+        let history = [];
+        let allResults = [];
+        let lastGeneratedMinute = null;
+        let level = 0;  // Track current level for multi-level logic
+
+        function getResultBasedOnLevel(level) {
+            if (level === 0) return Math.random() < 0.8 ? "BIG" : "SMALL";
+            if (level === 1) return Math.random() < 0.5 ? "BIG" : "SMALL";
+            if (level === 2) return "BIG";  // Force win pattern for level 2
+        }
+
+        function getWinningPattern() {
+            let randomNum = Math.floor(Math.random() * 10);
+            let pattern = randomNum <= 4 ? "SMALL" : "BIG";
+            return { number: randomNum, pattern: pattern };
+        }
+
+        function displayHistory() {
+            historyDiv.innerHTML = `
+                <h2><b>Recent History of Results</b></h2>
+                <table>
+                    <tr><th>PERIOD</th><th>RESULT</th></tr>
+                    ${history.map(item => 
+                        `<tr><td>${item.period}</td><td style="color: ${item.result.includes("SMALL") ? '#00BFFF' : '#FF0000'};">${item.result}</td></tr>`
+                    ).join("")}
+                </table>
+            `;
+        }
+
+        function displayAllResults() {
+            allResultsDiv.innerHTML = `
+                <h2><b>All Results</b></h2>
+                <div>
+                    ${allResults.map(item => 
+                        `<div style="color: ${item.result.includes("SMALL") ? '#7CFC00' : '#FF0000'};">
+                            <b>PERIOD:</b> ${item.period} | <b>RESULT:</b> ${item.result}
+                        </div>`
+                    ).join("<br>")}
+                </div>
+            `;
+        }
+
+        async function displayPeriodAndTimer() {
+            while (true) {
+                const now = new Date();
+                const currentMinute = now.getMinutes();
+
+                if (currentMinute !== lastGeneratedMinute) {  
+                    lastGeneratedMinute = currentMinute;
+                    const totalMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+                    const period1m = now.toISOString().slice(0, 10).replace(/-/g, "") + "1000" + String(10001 + totalMinutes);
+
+                    const { number, pattern } = getWinningPattern();
+                    const calculatedResult = getResultBasedOnLevel(level);
+
+                    const resultText = `<b>${calculatedResult} (${number})</b>`;
+                    history.unshift({ period: period1m, result: resultText });
+                    allResults.unshift({ period: period1m, result: resultText });
+
+                    if (history.length > 5) history.pop();
+
+                    if (calculatedResult === pattern) {
+                        level = 0;  // Reset level on win
+                    } else {
+                        level = Math.min(level + 1, 2);  // Increase level on loss
+                    }
+
+                    consoleDiv.innerHTML = `<p><b>PERIOD:</b> ${period1m} | <b>RESULT:</b> ${resultText} | <b>LEVEL:</b> ${level}</p>`;
+                    displayHistory();
+                    displayAllResults();
+                }
+
+                for (let remainingSeconds = 59; remainingSeconds >= 0; remainingSeconds--) {
+                    countdownDiv.innerHTML = `<b>Countdown Timer: 00:${remainingSeconds.toString().padStart(2, '0')}</b>`;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+        }
+
+        displayPeriodAndTimer();
+
+        // MATRIX RAIN ANIMATION
+        const canvas = document.getElementById('matrixRain');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        const fontSize = 16;
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = Array(columns).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00FF00';
+            ctx.font = `${fontSize}px monospace`;
+
+            drops.forEach((y, x) => {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                ctx.fillText(text, x * fontSize, y * fontSize);
+                drops[x] = y * fontSize > canvas.height && Math.random() > 0.975 ? 0 : y + 1;
+            });
+        }
+
+        setInterval(drawMatrix, 50);
+    </script>
+</body>
+</html>
